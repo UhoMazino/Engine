@@ -1,5 +1,6 @@
 #version 330 core
-in vec3 position;
+layout(location = 0) in vec3 position;
+
 uniform float angle;
 
 mat4 rotationMatrix(vec3 axis, float angle) {
@@ -17,7 +18,8 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
     return (m * vec4(v, 1.0)).xyz;
 }
 
+
 void main() {
     gl_Position = vec4(rotate(position, vec3(0.0, 1.0, 0.0), angle), 1.0);
-    // gl_Position = vec4(position, 1.0);
+    //gl_Position = vec4(position, 1.0);
 }

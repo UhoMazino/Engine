@@ -1,11 +1,13 @@
 import graphics.render.ShaderProgram
+import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL46C.*
 import org.lwjgl.system.MemoryUtil.NULL
-//import org.lwjgl.opengl.GL11.*
+import java.nio.FloatBuffer
 
 class Engine {
   companion object {
@@ -16,8 +18,11 @@ class Engine {
 
   private var errorCallback: GLFWErrorCallback? = null
   private var keyCallback: GLFWKeyCallback? = null
-
+  private var shaderProgram: ShaderProgram? = null
   private var window: Long? = null
+  private var vbo: Int = 0
+  private var vao: Int = 0
+  private var angleLocation : Int = 0
 
   private fun init() {
     // Setup an error callback. The default implementation
@@ -28,11 +33,15 @@ class Engine {
     if (!glfwInit()) {
       throw IllegalStateException("Unable to initialize GLFW")
     }
-    ShaderProgram("./resources/default/index.json")
     // Configure our window
     glfwDefaultWindowHints()
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+
+    /*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)*/
+
 
     // Create the window
     window = glfwCreateWindow(WINDOW_SIZE.first, WINDOW_SIZE.second, "Hello World!", NULL, NULL)
@@ -73,10 +82,6 @@ class Engine {
     // Make the window visible
     glfwShowWindow(window!!)
 
-  }
-
-  private fun loop() {
-
     // This line is critical for LWJGL's interoperation with GLFW's
     // OpenGL context, or any context that is managed externally.
     // LWJGL detects the context that is current in the current thread,
@@ -84,15 +89,51 @@ class Engine {
     // bindings available for use.
     GL.createCapabilities()
 
+    //GL11.glViewport(0, 0, 800, 600)
+    glDisable(GL_CULL_FACE)
+    //glCullFace(GL_BACK);
+    //glCullFace(GL_BACK);
+    //GL11.glEnable(GL11.GL_ALPHA_TEST)
+    //GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+    //GL11.glEnable(GL11.GL_DEPTH_TEST)
+
+    shaderProgram = ShaderProgram("./resources/default/index.json")
+    vao = glGenVertexArrays()
+    glBindVertexArray(vao)
+    vbo = glGenBuffers()
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
+    glBufferData(GL_ARRAY_BUFFER, floatArrayOf(-0.9f, -0.9f, 0.4f, 0f, 0.9f, -0.4f,  0.9f, -0.9f, 0.4f), GL_STATIC_DRAW)
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+    glEnableVertexAttribArray(0)
+
+    shaderProgram?.use()
+    angleLocation = glGetUniformLocation( shaderProgram!!.getId(), "angle");
+
+  }
+
+  var angle = 0f
+  private fun frame() {
+    // Clear the framebuffer
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    shaderProgram?.use()
+    angle += 0.01f
+    glUniform1f(angleLocation, angle)
+    glBindVertexArray(vao)
+    glDrawArrays(GL_TRIANGLES, 0, 3)
+  }
+
+  private fun loop() {
+
     // Set the clear color
-    glClearColor(0.0f, 1.0f, 0.0f, 0.0f)
+    glClearColor(0.1f, 0.0f, 0.1f, 0.0f)
 
     // Run the rendering loop until the user has attempted to close
     // the window or has pressed the ESCAPE key.
     while (!glfwWindowShouldClose(window!!)) {
 
-      // Clear the framebuffer
-      glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+
+      frame()
 
       // Swap the color buffers
       glfwSwapBuffers(window!!)

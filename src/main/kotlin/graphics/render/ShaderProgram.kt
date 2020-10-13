@@ -1,10 +1,11 @@
 package graphics.render
 
-import java.io.File
 import api.enums.G
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.*
 import org.lwjgl.opengl.GL46C.*
+import java.io.File
 
 @Serializable
 private data class JsonShader(val type: String, val src: String)
@@ -14,14 +15,23 @@ class ShaderProgram(private val path: String){
   private val shaders = HashMap<Int, Int>() //id type
   private var programId: Int = 0
 
+
   init {
     initShaders(readShaderSrc(this.path))
     compileShaders()
     linkProgram()
   }
 
-  fun Use() {
+  fun getId(): Int {
+    return programId
+  }
+
+  fun use() {
     glUseProgram(programId)
+  }
+
+  fun unUse() {
+    glUseProgram(0)
   }
 
 
@@ -37,10 +47,10 @@ class ShaderProgram(private val path: String){
 
   private fun compileShaders() {
     val status = IntArray(1)
-    shaderSources.forEach {
+    for (it in shaderSources) {
       shaders[glCreateShader(it.key)] = it.key
     }
-    shaders.forEach {
+    for (it in shaders) {
       glShaderSource(it.key, shaderSources[it.value]!!)
       glCompileShader(it.key)
       glGetShaderiv(it.key, GL_COMPILE_STATUS, status)
@@ -54,7 +64,7 @@ class ShaderProgram(private val path: String){
 
   private fun linkProgram() {
     programId = glCreateProgram()
-    shaders.forEach {
+    for (it in shaders) {
       glAttachShader(programId, it.key)
     }
     glLinkProgram(programId)
@@ -65,7 +75,7 @@ class ShaderProgram(private val path: String){
       glDeleteProgram(programId)
       throw RuntimeException(str)
     }
-    shaders.forEach {
+    for (it in shaders) {
       glDetachShader(programId, it.key)
     }
   }
