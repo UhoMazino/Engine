@@ -1,6 +1,5 @@
 #version 330 core
-layout(location = 0) in vec3 position;
-
+in vec3 position;
 uniform float angle;
 
 mat4 rotationMatrix(vec3 axis, float angle) {

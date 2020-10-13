@@ -5,9 +5,11 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL46C.*
 import org.lwjgl.system.MemoryUtil.NULL
 import java.nio.FloatBuffer
+import kotlin.reflect.KFunction
 
 class Engine {
   companion object {
@@ -103,12 +105,11 @@ class Engine {
     vbo = glGenBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, floatArrayOf(-0.9f, -0.9f, 0.4f, 0f, 0.9f, -0.4f,  0.9f, -0.9f, 0.4f), GL_STATIC_DRAW)
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+    glVertexAttribPointer( glGetAttribLocation(shaderProgram!!.getId(), "position"), 3, GL_FLOAT, false, 0, 0)
     glEnableVertexAttribArray(0)
 
     shaderProgram?.use()
-    angleLocation = glGetUniformLocation( shaderProgram!!.getId(), "angle");
-
+    angleLocation = glGetUniformLocation( shaderProgram!!.getId(), "angle")
   }
 
   var angle = 0f
