@@ -1,121 +1,122 @@
+import graphics.render.ShaderProgram
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL46C.*
 import org.lwjgl.system.MemoryUtil.NULL
+//import org.lwjgl.opengl.GL11.*
 
 class Engine {
+  companion object {
 
-    companion object {
+    val WINDOW_SIZE = Pair(800, 600)
 
-        val WINDOW_SIZE = Pair(800, 600)
+  }
 
+  private var errorCallback: GLFWErrorCallback? = null
+  private var keyCallback: GLFWKeyCallback? = null
+
+  private var window: Long? = null
+
+  private fun init() {
+
+    // Setup an error callback. The default implementation
+    // will print the error message in System.err.
+    errorCallback = glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err))
+
+    // Initialize GLFW. Most GLFW functions will not work before doing this.
+    if (!glfwInit()) {
+      throw IllegalStateException("Unable to initialize GLFW")
+    }
+    ShaderProgram("./resources/default/index.json")
+    // Configure our window
+    glfwDefaultWindowHints()
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+
+    // Create the window
+    window = glfwCreateWindow(WINDOW_SIZE.first, WINDOW_SIZE.second, "Hello World!", NULL, NULL)
+    if (window == NULL) {
+      throw RuntimeException("Failed to create the GLFW window")
     }
 
-    private var errorCallback: GLFWErrorCallback? = null
-    private var keyCallback: GLFWKeyCallback? = null
-
-    private var window: Long? = null
-
-    private fun init() {
-
-        // Setup an error callback. The default implementation
-        // will print the error message in System.err.
-        errorCallback = glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err))
-
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit()) {
-            throw IllegalStateException("Unable to initialize GLFW")
+    // Setup a key callback. It will be called every time a key is pressed, repeated or released.
+    keyCallback = glfwSetKeyCallback(window!!, object : GLFWKeyCallback() {
+      override fun invoke(
+        window: Long,
+        key: Int,
+        scancode: Int,
+        action: Int,
+        mods: Int,
+      ) {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+          glfwSetWindowShouldClose(window, true)
         }
+      }
+    })
 
-        // Configure our window
-        glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+    // Get the resolution of the primary monitor
+    val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
 
-        // Create the window
-        window = glfwCreateWindow(WINDOW_SIZE.first, WINDOW_SIZE.second, "Hello World!", NULL, NULL)
-        if (window == NULL) {
-            throw RuntimeException("Failed to create the GLFW window")
-        }
+    // Center our window
+    glfwSetWindowPos(
+      window!!,
+      (vidmode!!.width() - WINDOW_SIZE.first) / 2,
+      (vidmode.height() - WINDOW_SIZE.second) / 2
+    )
 
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        keyCallback = glfwSetKeyCallback(window!!, object : GLFWKeyCallback() {
-            override fun invoke(
-                window: Long,
-                key: Int,
-                scancode: Int,
-                action: Int,
-                mods: Int
-            ) {
-                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                    glfwSetWindowShouldClose(window, true)
-                }
-            }
-        })
+    // Make the OpenGL context current
+    glfwMakeContextCurrent(window!!)
+    // Enable v-sync
+    glfwSwapInterval(1)
 
-        // Get the resolution of the primary monitor
-        val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
+    // Make the window visible
+    glfwShowWindow(window!!)
 
-        // Center our window
-        glfwSetWindowPos(
-            window!!,
-            (vidmode!!.width() - WINDOW_SIZE.first) / 2,
-            (vidmode.height() - WINDOW_SIZE.second) / 2
-        )
+  }
 
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(window!!)
-        // Enable v-sync
-        glfwSwapInterval(1)
+  private fun loop() {
 
-        // Make the window visible
-        glfwShowWindow(window!!)
+    // This line is critical for LWJGL's interoperation with GLFW's
+    // OpenGL context, or any context that is managed externally.
+    // LWJGL detects the context that is current in the current thread,
+    // creates the GLCapabilities instance and makes the OpenGL
+    // bindings available for use.
+    GL.createCapabilities()
 
+    // Set the clear color
+    glClearColor(0.0f, 1.0f, 0.0f, 0.0f)
+
+    // Run the rendering loop until the user has attempted to close
+    // the window or has pressed the ESCAPE key.
+    while (!glfwWindowShouldClose(window!!)) {
+
+      // Clear the framebuffer
+      glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+      // Swap the color buffers
+      glfwSwapBuffers(window!!)
+
+      // Poll for window events. The key callback above will only be
+      // invoked during this call.
+      glfwPollEvents()
     }
 
-    private fun loop() {
+  }
 
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GL.createCapabilities()
+  fun run() {
+    try {
+      init()
+      loop()
+      glfwDestroyWindow(window!!)
+      keyCallback?.free()
+    } finally {
 
-        // Set the clear color
-        glClearColor(0.0f, 1.0f, 0.0f, 0.0f)
-
-        // Run the rendering loop until the user has attempted to close
-        // the window or has pressed the ESCAPE key.
-        while (!glfwWindowShouldClose(window!!)) {
-
-            // Clear the framebuffer
-            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
-
-            // Swap the color buffers
-            glfwSwapBuffers(window!!)
-
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
-            glfwPollEvents()
-        }
+      glfwTerminate()
+      errorCallback?.free()
 
     }
-
-    fun run() {
-        try {
-            init()
-            loop()
-            glfwDestroyWindow(window!!)
-            keyCallback?.free()
-        } finally {
-
-            glfwTerminate()
-            errorCallback?.free()
-
-        }
-    }
+  }
 
 }

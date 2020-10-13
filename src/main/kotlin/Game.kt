@@ -1,6 +1,7 @@
-fun main(args: Array<String>) {
+import com.intellij.util.containers.stream
+import java.lang.management.ManagementFactory
 
-    val engine = Engine()
-    engine.run()
-
+fun main() {
+  val engine = Engine()
+  engine.run()
 }

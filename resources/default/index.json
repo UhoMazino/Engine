@@ -1,0 +1,10 @@
+[
+  {
+    "type": "VERTEX",
+    "src": "vertex.glsl"
+  },
+  {
+    "type": "FRAGMENT",
+    "src": "fragment.glsl"
+  }
+]
