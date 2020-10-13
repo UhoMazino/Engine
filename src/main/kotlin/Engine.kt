@@ -20,7 +20,6 @@ class Engine {
   private var window: Long? = null
 
   private fun init() {
-
     // Setup an error callback. The default implementation
     // will print the error message in System.err.
     errorCallback = glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err))
