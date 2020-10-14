@@ -14,14 +14,14 @@ class Engine {
 
   }
 
-  private val log = logger(Engine::class.java.name)
+  private val log = logger(this.javaClass.name)
   private var errorCallback: GLFWErrorCallback? = null
   private var keyCallback: GLFWKeyCallback? = null
   private var shaderProgram: ShaderProgram? = null
   private var window: Long? = null
   private var vbo: Int = 0
   private var vao: Int = 0
-  private var angleLocation : Int = 0
+  private var angleLocation: Int = 0
 
   private fun init() {
     log.info("start init")
@@ -129,7 +129,6 @@ class Engine {
     // Run the rendering loop until the user has attempted to close
     // the window or has pressed the ESCAPE key.
     while (!glfwWindowShouldClose(window!!)) {
-
 
 
       frame()
