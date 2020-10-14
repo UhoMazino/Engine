@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <!-- Секция аппендеров -->
+    <Appenders>
+        <!-- Файловый аппендер -->
+        <!--
+      <File name="file" fileName="logs/client-${date:yyyy-MM-dd_HH-mm-ss}.log">
+          <PatternLayout>
+              <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
+          </PatternLayout>
+      </File>
+      -->
+        <RollingFile name="RollingFile" fileName="logs/${date:yyyy-MM-dd_HH-mm-ss}.log"
+                     filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m %ex%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>%d %p %c [%t] %m %ex%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+        </Console>
+        <Console name="console-errors" target="SYSTEM_ERR">
+            <PatternLayout>
+                <Pattern>%d %p %c [%t] %m %ex%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="ALLOW" onMismatch="DENY"/>
+                <ThresholdFilter level="error" onMatch="ALLOW" onMismatch="DENY"/>
+            </Filters>
+        </Console>
+    </Appenders>
+    <!-- Секция логгеров -->
+    <Loggers>
+        <!-- Корневой логгер -->
+        <Root level="trace">
+            <!--   <AppenderRef ref="file" level="ALL"/>   -->
+            <AppenderRef ref="RollingFile" level="ALL"/>
+            <AppenderRef ref="console" level="ALL"/>
+            <AppenderRef ref="console-errors" level="ERROR"/>
+        </Root>
+    </Loggers>
+</Configuration> 

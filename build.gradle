@@ -15,6 +15,7 @@ project.ext.lwjglVersion = "3.2.3"
 project.ext.jomlVersion = "1.9.25"
 project.ext.lwjglNatives = "natives-windows"
 
+
 repositories {
     mavenCentral()
     jcenter()
@@ -31,6 +32,8 @@ dependencies {
 
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-api-kotlin', version: '1.0.0'
+    compile 'org.apache.logging.log4j:log4j-api-kotlin:1.0.0'
 
     //LWJGL
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
