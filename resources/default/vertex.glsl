@@ -1,6 +1,8 @@
 #version 330 core
 in vec3 position;
+layout(location = 1) in vec2 coor;
 uniform float angle;
+out vec2 texcord;
 
 mat4 rotationMatrix(vec3 axis, float angle) {
     axis = normalize(axis);
@@ -20,5 +22,6 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
 
 void main() {
     gl_Position = vec4(rotate(position, vec3(0.0, 1.0, 0.0), angle), 1.0);
+    texcord = coor;
     //gl_Position = vec4(position, 1.0);
 }
