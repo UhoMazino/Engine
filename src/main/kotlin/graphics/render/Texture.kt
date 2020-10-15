@@ -4,17 +4,29 @@ import java.awt.Color
 import java.awt.Font
 import java.awt.RenderingHints.*
 import java.awt.font.FontRenderContext
+import java.awt.font.TextAttribute
+import java.awt.font.TextAttribute.*
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 
 
-class Texture {
+class Texture(c: Char) {
+
+  init {
+    genTexture(c)
+  }
+
   var w = 0
   var h = 0
+  var tex: IntArray? = null
 
-  fun getTexture(): IntArray {
-    val sampleText = "<~ === FIRA КИРИЛИЦА <==> CODE === ~>"
-    val font = Font("Fira Code", Font.PLAIN, 50)
+
+  private fun genTexture(c: Char) {
+    val sampleText = c.toString()
+    var font = Font("Fira Code", Font.PLAIN, 500)
+    val attr = HashMap<TextAttribute, Any>()
+    attr[LIGATURES] = LIGATURES_ON
+    font = font.deriveFont(attr)
     val frc = FontRenderContext(null, true, true)
     val bounds: Rectangle2D = font.getStringBounds(sampleText, frc)
     w = bounds.width.toInt()
@@ -36,8 +48,7 @@ class Texture {
     g.font = font
     g.drawString(sampleText, bounds.x.toFloat(), (-bounds.y).toFloat())
     g.dispose()
-    val pixels = IntArray(w * h)
-    image.getRGB(0, 0, w, h, pixels, 0, w)
-    return pixels
+    tex = IntArray(w * h)
+    image.getRGB(0, 0, w, h, tex, 0, w)
   }
 }

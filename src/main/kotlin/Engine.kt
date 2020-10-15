@@ -1,22 +1,24 @@
-import graphics.render.ShaderProgram
 import org.apache.logging.log4j.kotlin.logger
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
+import org.lwjgl.glfw.GLFWCharCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.GL_ALPHA_TEST
 import org.lwjgl.opengl.GL46C.*
 import org.lwjgl.system.MemoryUtil.NULL
+
 import graphics.render.Texture
-import kotlin.random.Random
+import graphics.render.ShaderProgram
 
 class Engine {
   companion object {
-    val WINDOW_SIZE = Pair(800, 600)
+    val WINDOW_SIZE = Pair(800, 800)
   }
 
   private val log = logger(this.javaClass.name)
   private var errorCallback: GLFWErrorCallback? = null
+  private var charCallback: GLFWCharCallback? = null
   private var keyCallback: GLFWKeyCallback? = null
   private var shaderProgram: ShaderProgram? = null
   private var window: Long? = null
@@ -25,7 +27,7 @@ class Engine {
   private var vao: Int = 0
   private var vbotex: Int = 0
   private var angleLocation: Int = 0
-  private var texture = Texture()
+  private var texture = Texture('▲')
 
   private fun init() {
     log.info("start init")
@@ -41,6 +43,7 @@ class Engine {
     glfwDefaultWindowHints()
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+    glfwWindowHint(GLFW_SAMPLES, 16)
 
     /**glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
@@ -54,6 +57,7 @@ class Engine {
     }
 
     // Setup a key callback. It will be called every time a key is pressed, repeated or released.
+
     keyCallback = glfwSetKeyCallback(window!!, object : GLFWKeyCallback() {
       override fun invoke(
         window: Long,
@@ -65,6 +69,15 @@ class Engine {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
           glfwSetWindowShouldClose(window, true)
         }
+      }
+    })
+
+    charCallback = glfwSetCharCallback(window!!, object : GLFWCharCallback() {
+      override fun invoke(
+        window: Long,
+        c: Int,
+      ) {
+        texture = Texture(c.toChar())
       }
     })
 
@@ -108,45 +121,52 @@ class Engine {
     vbo = glGenBuffers()
     vbotex = glGenBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
-    glBufferData(GL_ARRAY_BUFFER, floatArrayOf(-0.9f, -0.9f, 0.4f, 0f, 0.9f, -0.4f, 0.9f, -0.9f, 0.4f), GL_STATIC_DRAW)
+    glBufferData(GL_ARRAY_BUFFER,
+      floatArrayOf(
+        -.15f, -.15f, 0f,
+        .15f, -.15f, 0f,
+        -.15f, .15f, 0f,
+        -.15f, .15f, 0f,
+        .15f, -.15f, 0f,
+        .15f, .15f, 0f
+      ),
+      GL_STATIC_DRAW)
     glVertexAttribPointer(glGetAttribLocation(shaderProgram!!.getId(), "position"), 3, GL_FLOAT, false, 0, 0)
     glBindBuffer(GL_ARRAY_BUFFER, vbotex)
-    glBufferData(GL_ARRAY_BUFFER, floatArrayOf(0f, 0f, .5f, 1f, 1f, 0f), GL_STATIC_DRAW)
+    glBufferData(GL_ARRAY_BUFFER, floatArrayOf(0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 1f, 1f, 1f, 0f), GL_STATIC_DRAW)
     glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0)
     glEnableVertexAttribArray(glGetAttribLocation(shaderProgram!!.getId(), "position"))
     glEnableVertexAttribArray(1)
-    textureId = glGenTextures()
-    glBindTexture(GL_TEXTURE_2D, textureId)
-    glGenerateMipmap(textureId)
+    textureId = glGenTextures().also {
+      glBindTexture(GL_TEXTURE_2D, it)
+      glGenerateMipmap(it)
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-//    var arr = IntArray(10000)
-//    var cursor = 0
-//    while(cursor < arr.size) {
-//      arr[cursor] = Random(Int.MIN_VALUE,)
-//    }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_RGBA, GL_RGBA_INTEGER, texture.getTexture())
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.tex)
     shaderProgram?.use()
     angleLocation = glGetUniformLocation(shaderProgram!!.getId(), "angle")
   }
 
-  var angle = 0f
+  var angle = 1f
   private fun frame() {
     // Clear the framebuffer
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    glEnable(GL_BLEND)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, texture.tex)
     shaderProgram?.use()
-    angle += 0.01f
+    angle += .01f
     glBindTexture(GL_TEXTURE_2D, textureId)
     glUniform1f(angleLocation, angle)
     glBindVertexArray(vao)
-    glDrawArrays(GL_TRIANGLES, 0, 3)
+    glDrawArrays(GL_TRIANGLES, 0, 6)
   }
 
   private fun loop() {
     // Set the clear color
-    glClearColor(1f, 0.0f, 1f, 0.0f)
+    glClearColor(0f, 0f, 0f, 0f)
 
     // Run the rendering loop until the user has attempted to close
     // the window or has pressed the ESCAPE key.
@@ -167,6 +187,7 @@ class Engine {
       loop()
       glfwDestroyWindow(window!!)
       keyCallback?.free()
+      charCallback?.free()
     } finally {
       glfwTerminate()
       errorCallback?.free()
