@@ -122,13 +122,13 @@ class Engine {
     vbotex = glGenBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER,
-      floatArrayOf(
-        -.15f, -.15f, 0f,
-        .15f, -.15f, 0f,
-        -.15f, .15f, 0f,
-        -.15f, .15f, 0f,
-        .15f, -.15f, 0f,
-        .15f, .15f, 0f
+      floatArrayOf( // 307 _ 615 _ 188805 w h size fo char
+        -.307f, -.615f, 0f,
+        .307f, -.615f, 0f,
+        -.307f, .615f, 0f,
+        -.307f, .615f, 0f,
+        .307f, -.615f, 0f,
+        .307f, .615f, 0f
       ),
       GL_STATIC_DRAW)
     glVertexAttribPointer(glGetAttribLocation(shaderProgram!!.getId(), "position"), 3, GL_FLOAT, false, 0, 0)
@@ -139,23 +139,27 @@ class Engine {
     glEnableVertexAttribArray(1)
     textureId = glGenTextures().also {
       glBindTexture(GL_TEXTURE_2D, it)
-      glGenerateMipmap(it)
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.tex)
+    lastTexture = texture
     shaderProgram?.use()
     angleLocation = glGetUniformLocation(shaderProgram!!.getId(), "angle")
   }
 
   var angle = 1f
+  private var lastTexture : Texture? = null
   private fun frame() {
     // Clear the framebuffer
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
     glEnable(GL_BLEND)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, texture.tex)
+    if (lastTexture != texture) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_BGRA, GL_UNSIGNED_BYTE, texture.tex)
+      lastTexture = texture
+    }
     shaderProgram?.use()
     angle += .01f
     glBindTexture(GL_TEXTURE_2D, textureId)

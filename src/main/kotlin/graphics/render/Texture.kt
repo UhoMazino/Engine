@@ -31,6 +31,7 @@ class Texture(c: Char) {
     val bounds: Rectangle2D = font.getStringBounds(sampleText, frc)
     w = bounds.width.toInt()
     h = bounds.height.toInt()
+    println("$w _ $h _ ${w*h}")
     val image = BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
     val g = image.createGraphics()
     g.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY)
