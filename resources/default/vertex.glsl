@@ -1,6 +1,6 @@
 #version 330 core
 in vec3 position;
-layout(location = 1) in vec2 coor;
+in vec2 coor;
 uniform float angle;
 out vec2 texcord;
 

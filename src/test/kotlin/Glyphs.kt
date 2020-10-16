@@ -1,5 +1,7 @@
 package test
 
+
+import com.intellij.util.ui.UIUtil
 import java.awt.Color
 import java.awt.Font
 import java.awt.FontMetrics
@@ -17,7 +19,7 @@ class Texture {
   var h = 0
   fun getTexture(): IntArray {
     val sampleText = "<~ === FIRA КИРИЛИЦА <==> CODE === ~>"
-    val font = Font("Fira Code", Font.PLAIN, 50)
+    val font = Font("Fira Code", Font.PLAIN, 10)
     val frc = FontRenderContext(null, true, true)
     val bounds: Rectangle2D = font.getStringBounds(sampleText, frc)
     val w = bounds.width.toInt().also { this.w = w }
@@ -30,7 +32,7 @@ class Texture {
     g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY)
     g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE)
     g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON)
-    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
     g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
     g.color = Color(0, true)

@@ -10,6 +10,7 @@ import org.lwjgl.system.MemoryUtil.NULL
 
 import graphics.render.Texture
 import graphics.render.ShaderProgram
+import org.lwjgl.glfw.GLFWWindowSizeCallback
 
 class Engine {
   companion object {
@@ -20,6 +21,7 @@ class Engine {
   private var errorCallback: GLFWErrorCallback? = null
   private var charCallback: GLFWCharCallback? = null
   private var keyCallback: GLFWKeyCallback? = null
+  private var windowSizeCallback: GLFWWindowSizeCallback? = null
   private var shaderProgram: ShaderProgram? = null
   private var window: Long? = null
   private var textureId: Int = 0
@@ -81,6 +83,24 @@ class Engine {
       }
     })
 
+    windowSizeCallback = glfwSetWindowSizeCallback(window!!, object : GLFWWindowSizeCallback(){
+      override fun invoke(
+        window: Long,
+        width: Int,
+        height: Int
+      ) {
+        try {
+          GL.getCapabilities()
+          /*TODO: нет нормальной проверки на создание gl контекста и загрузки адресов функций,
+            не удачный get бросает исключение, в тавком случае нельзе делать gl вызовы. А это возмлжно
+            так как келбек вызывается до создания контекста gl*/
+          glViewport(0, 0, width, height)
+        } catch (e: Exception){
+          log.warn("Ресайз окна вызван до создания контекста opengl\n${e.message!!}")
+        }
+      }
+    })
+
     // Get the resolution of the primary monitor
     val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
 
@@ -106,7 +126,7 @@ class Engine {
     bindings available for use. */
     GL.createCapabilities()
 
-//    GL11.glViewport(0, 0, 800, 600)
+    glViewport(0, 0, WINDOW_SIZE.first, WINDOW_SIZE.second)
     glDisable(GL_CULL_FACE)
 //    glEnable(GL_CULL_FACE)
 //    glCullFace(GL_BACK);
@@ -134,9 +154,9 @@ class Engine {
     glVertexAttribPointer(glGetAttribLocation(shaderProgram!!.getId(), "position"), 3, GL_FLOAT, false, 0, 0)
     glBindBuffer(GL_ARRAY_BUFFER, vbotex)
     glBufferData(GL_ARRAY_BUFFER, floatArrayOf(0f, 1f, 1f, 1f, 0f, 0f, 0f, 0f, 1f, 1f, 1f, 0f), GL_STATIC_DRAW)
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0)
+    glVertexAttribPointer(glGetAttribLocation(shaderProgram!!.getId(), "coor"), 2, GL_FLOAT, false, 0, 0)
     glEnableVertexAttribArray(glGetAttribLocation(shaderProgram!!.getId(), "position"))
-    glEnableVertexAttribArray(1)
+    glEnableVertexAttribArray(glGetAttribLocation(shaderProgram!!.getId(), "coor"))
     textureId = glGenTextures().also {
       glBindTexture(GL_TEXTURE_2D, it)
     }
